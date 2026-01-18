@@ -1,0 +1,2110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Granny Square Palette Lab</title>
+  <style>
+    :root{
+      --bg:#ffffff;
+      --card:#ffffff;
+      --muted:#55606f;
+      --text:#0b1220;
+      --line:#e5e7eb;
+      --shadow: 0 10px 24px rgba(0,0,0,.10);
+      --radius: 18px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      background: var(--bg);
+      color:var(--text);
+    }
+
+    .wrap{max-width:1100px;margin:0 auto;padding:22px 18px}
+    .titleBlock{max-width:1100px;margin:0 auto;padding:22px 18px 8px;}
+
+    h1{margin:0;font-size:24px;letter-spacing:.2px}
+    .sub{margin-top:6px;color:var(--muted);line-height:1.35}
+
+    .toolbar{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      margin-top:14px;
+    }
+
+    .packControls{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      padding:10px 12px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:#f8fafc;
+      box-shadow: var(--shadow);
+    }
+
+    .packLabel{
+      color:var(--muted);
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+    }
+
+    .alert{
+      margin-top:10px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid transparent;
+      font-size:12px;
+      display:none;
+    }
+
+    .alert.show{display:block;}
+    .alert.warn{background:#fffbeb;border-color:#fcd34d;color:#92400e;}
+    .alert.error{background:#fef2f2;border-color:#fecaca;color:#7f1d1d;}
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 12px;
+      border:1px solid var(--line);
+      border-radius:999px;
+      background:#f8fafc;
+      box-shadow: var(--shadow);
+    }
+
+    .btn{
+      cursor:pointer;
+      border:1px solid var(--line);
+      background:#f8fafc;
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:999px;
+      font-weight:600;
+      letter-spacing:.2px;
+    }
+    .btn:disabled{opacity:.5;cursor:not-allowed;}
+
+    .grid{
+      display:grid;
+      grid-template-columns: repeat( auto-fit, minmax(300px, 1fr) );
+      gap:16px;
+      padding:22px 18px 18px;
+      max-width:1100px;
+      margin:0 auto;
+    }
+
+    .emptyState{
+      padding:16px;
+      border-radius:14px;
+      border:1px dashed var(--line);
+      background:#f8fafc;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.35;
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    .cardTop{padding:16px 16px 12px;display:flex;gap:14px;align-items:flex-start;}
+    .title{font-size:16px;margin:0;line-height:1.2;letter-spacing:.2px;}
+    .meta{margin-top:6px;color:var(--muted);font-size:13px;line-height:1.35}
+    .inspired{font-size:12px;}
+
+    .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+    .chip{font-family:var(--mono);font-size:12px;padding:6px 8px;border:1px solid var(--line);border-radius:999px;background:#f8fafc;color:var(--muted);white-space:nowrap;}
+
+    .swatches{display:grid;grid-template-columns: repeat(4, 1fr);gap:8px;padding:0 16px 16px;}
+    .sw{border-radius:14px;border:1px solid rgba(0,0,0,.08);overflow:hidden;background:transparent;position:relative;min-height:66px;}
+    .sw .bar{height:100%;}
+    .sw .lbl{position:absolute;left:10px;bottom:8px;right:10px;font-size:12px;color:rgba(255,255,255,.92);text-shadow:0 2px 10px rgba(0,0,0,.55);display:flex;justify-content:space-between;gap:10px;}
+    .role{padding:2px 8px;border-radius:999px;background:rgba(0,0,0,.32);border:1px solid rgba(255,255,255,.12);font-family:var(--mono);font-size:11px;color:rgba(255,255,255,.88);}
+
+    section.preview{max-width:1100px;margin:0 auto;padding:0 18px 26px;}
+    .previewCard{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow: var(--shadow);padding:18px;}
+    .previewHeader{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
+    .previewHeader h2{margin:0;font-size:18px}
+    .previewWhy{font-size:12px;font-weight:500;color:var(--muted);}
+
+    .select{appearance:none;-webkit-appearance:none;-moz-appearance:none;padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:#f8fafc;color:var(--text);font-weight:600;}
+    .numInput{width:72px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:#f8fafc;color:var(--text);font-weight:600;}
+    .labelMini{display:inline-flex;align-items:center;gap:8px;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.12em;}
+    .customControls{display:grid;grid-template-columns: repeat(2, minmax(0, 1fr));gap:10px;padding:12px;border:1px solid var(--line);border-radius:14px;background:#f8fafc;}
+    .customRow{display:flex;align-items:center;gap:10px;}
+    .customRole{font-size:12px;color:var(--muted);min-width:120px;}
+    .customPick{display:flex;align-items:center;gap:8px;flex:1;min-width:0;position:relative;}
+    .customSelectNative{display:none;}
+    .customSelectBtn{flex:1;min-width:0;display:flex;align-items:center;gap:10px;justify-content:flex-start;}
+    .customSelectLabel{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .customSelectMenu{position:absolute;top:calc(100% + 6px);left:0;right:0;background:#ffffff;border:1px solid var(--line);border-radius:14px;padding:8px;box-shadow:var(--shadow);max-height:240px;overflow:auto;z-index:20;}
+    .customOption{display:flex;align-items:center;gap:10px;width:100%;border:0;background:transparent;padding:8px 10px;border-radius:10px;color:var(--text);cursor:pointer;text-align:left;font:inherit;}
+    .customOption:hover{background:#f3f4f6;}
+    .customOption[aria-selected="true"]{background:#e5e7eb;}
+    .optionCheck{margin-left:auto;color:var(--muted);}
+    .swatchDot{width:14px;height:14px;border-radius:999px;background:var(--hex);border:1px solid rgba(0,0,0,.15);display:inline-block;flex:0 0 auto;}
+
+    .previewGrid{display:grid;grid-template-columns: 1fr;gap:14px;}
+
+    .typesRow{display:grid;grid-template-columns: repeat(4, minmax(0, 1fr));gap:12px;}
+    .typeCard{border:1px solid var(--line);border-radius:16px;padding:12px;background:#f8fafc;}
+    .typeCard h3{margin:0 0 10px;font-size:13px;color:var(--muted);font-family:var(--mono);letter-spacing:.2px;}
+    .typeSvg{display:flex;justify-content:center;align-items:center;}
+
+    .patternWrap{border:1px solid var(--line);border-radius:16px;padding:12px;background:#f8fafc;overflow:hidden;}
+    .patternTitle{margin:0 0 10px;font-size:13px;color:var(--muted);font-family:var(--mono);letter-spacing:.2px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+    .patternGrid{display:grid;grid-template-columns: repeat(4, var(--tile-size, 84px));grid-auto-rows: 1fr !important;gap:0 !important;justify-content:start;align-content:start;margin:0 auto;max-width:100%;background:transparent;}
+
+    .tile{border-radius:0 !important;border:0 !important;overflow:hidden;background:transparent !important;display:flex;justify-content:center;align-items:center;padding:0 !important;aspect-ratio:1 / 1;}
+    .tile svg{width:100%;height:100%;display:block;transform:scale(1.001);transform-origin:top left;shape-rendering:crispEdges;}
+
+    .foot{margin-top:12px;color:var(--muted);font-size:12px;line-height:1.35;}
+
+    .utilities{max-width:1100px;margin:24px auto 40px;padding:16px 18px 24px;border-top:1px solid var(--line);}
+    .utilitiesRow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+
+    @media (max-width: 620px){
+      .typesRow{grid-template-columns: repeat(2, minmax(0, 1fr));}
+      .patternGrid{grid-template-columns: repeat(2, 1fr);}
+      .customControls{grid-template-columns: 1fr;}
+      .customRole{min-width:0;}
+    }
+  </style>
+</head>
+<body>
+
+<div class="titleBlock">
+  <h1>Granny Square Palette Lab</h1>
+</div>
+
+<main>
+  <section class="preview">
+    <div class="previewCard">
+      <div class="previewHeader">
+        <h2>Pattern preview <span class="previewWhy" id="previewWhy"></span></h2>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <span style="color:var(--muted);font-size:13px;">Select a mode:</span>
+          <span style="color:var(--muted);font-size:13px;">Palette set:</span>
+          <select id="setSelect" class="select"></select>
+          <select id="paletteSelect" class="select"></select>
+          <button class="btn" id="prevPalette" type="button">◀ Prev</button>
+          <button class="btn" id="nextPalette" type="button">Next ▶</button>
+          <label class="labelMini">Repeat X <input id="repeatX" class="numInput" type="number" min="1" step="1" value="2" /></label>
+          <label class="labelMini">Repeat Y <input id="repeatY" class="numInput" type="number" min="1" step="1" value="1" /></label>
+          <button class="btn" id="downloadJpg">Download JPG</button>
+        </div>
+      </div>
+      <div class="customControls" id="customControls" hidden>
+        <div class="customRow">
+          <span class="customRole">Anchor</span>
+          <div class="customPick">
+            <select id="customCenter" class="customSelectNative" aria-hidden="true" tabindex="-1"></select>
+            <button class="select customSelectBtn" type="button" data-select="customCenter" aria-haspopup="listbox" aria-expanded="false">
+              <span class="swatchDot" aria-hidden="true"></span>
+              <span class="customSelectLabel"></span>
+            </button>
+            <div class="customSelectMenu" id="customCenterMenu" role="listbox" hidden></div>
+          </div>
+        </div>
+        <div class="customRow">
+          <span class="customRole">Antagonist (cold)</span>
+          <div class="customPick">
+            <select id="customRing1" class="customSelectNative" aria-hidden="true" tabindex="-1"></select>
+            <button class="select customSelectBtn" type="button" data-select="customRing1" aria-haspopup="listbox" aria-expanded="false">
+              <span class="swatchDot" aria-hidden="true"></span>
+              <span class="customSelectLabel"></span>
+            </button>
+            <div class="customSelectMenu" id="customRing1Menu" role="listbox" hidden></div>
+          </div>
+        </div>
+        <div class="customRow">
+          <span class="customRole">Antagonist (hot)</span>
+          <div class="customPick">
+            <select id="customRing2" class="customSelectNative" aria-hidden="true" tabindex="-1"></select>
+            <button class="select customSelectBtn" type="button" data-select="customRing2" aria-haspopup="listbox" aria-expanded="false">
+              <span class="swatchDot" aria-hidden="true"></span>
+              <span class="customSelectLabel"></span>
+            </button>
+            <div class="customSelectMenu" id="customRing2Menu" role="listbox" hidden></div>
+          </div>
+        </div>
+        <div class="customRow">
+          <span class="customRole">Mediator</span>
+          <div class="customPick">
+            <select id="customRing3" class="customSelectNative" aria-hidden="true" tabindex="-1"></select>
+            <button class="select customSelectBtn" type="button" data-select="customRing3" aria-haspopup="listbox" aria-expanded="false">
+              <span class="swatchDot" aria-hidden="true"></span>
+              <span class="customSelectLabel"></span>
+            </button>
+            <div class="customSelectMenu" id="customRing3Menu" role="listbox" hidden></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="previewGrid">
+        <div class="typesRow" id="typesRow"></div>
+
+        <div class="patternWrap">
+          <div class="patternTitle">
+            <span>4×4 tiling (α β γ δ; β γ δ α; γ δ α β; δ α β γ)</span>
+            <span id="patternRepeat" style="color:var(--muted);"></span>
+            <span id="modeName" style="color:var(--text);"></span>
+          </div>
+          <div class="patternGrid" id="patternGrid"></div>
+          <div class="foot">Each tile is a simplified “granny square” preview: <b>centre → ring1 → ring2 → ring3</b>. This aims to match the structure in your reference photo (texture not simulated; geometry and colour-phase are).</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="grid" id="grid"></div>
+
+  <section class="utilities">
+    <div class="utilitiesRow">
+      <div class="pill" title="These hex values are approximations; adjust to match your exact Toft shades.">
+        <span style="color:var(--muted);font-size:13px;">Colours are approximations</span>
+      </div>
+      <div class="packControls">
+        <span class="packLabel">Palette sets</span>
+        <button class="btn" id="loadPackButton">Import JSON…</button>
+        <button class="btn" id="exportPackButton">Export JSON</button>
+        <input id="palettePackInput" type="file" accept="application/json" hidden />
+      </div>
+    </div>
+    <div class="alert error" id="packStatus" role="status" aria-live="polite"></div>
+    <div class="alert warn" id="unknownColors" role="status" aria-live="polite"></div>
+    <div class="foot">Inspired by <a href="https://www.toftuk.com/PD.aspx?product=Home/Blankets/-Granny_Square_Blanket" target="_blank" rel="noreferrer">Toft</a></div>
+  </section>
+
+</main>
+
+<script>
+  const PACK_SCHEMA = 'granny-palette-pack/v1';
+  const COLLECTION_SCHEMA = 'palette-pack-collection/v1';
+ const TOFT_HEX = {
+    // ── Absolute darks / anchors
+    CHARCOAL: "#171616",
+    COCOA: "#1a120f",
+    AMETHYST: "#361336",
+    SAPPHIRE: "#1e2233",
+    BLUE: "#1a2a5f",
+    TEAL: "#06363e",
+
+    // ── Dark neutrals / minerals
+    FUDGE: "#603c25",
+    CHESTNUT: "#43281b",
+    BEETROOT: "#4a1622",
+    RUBY: "#7a0018",
+    RASPBERRY: "#742431",
+
+    // ── Greys / stones
+    STEEL: "#525656",
+    SHALE: "#646a63",
+    MUSHROOM: "#5f5c55",
+
+    // ── Earthy lights / base neutrals
+    CAMEL: "#b3a38f",
+    STONE: "#b1a99c",
+    OATMEAL: "#f1eee1",
+    CREAM: "#eef0eb",
+    SILVER: "#c0c3bc",
+
+    // ── Soft yellows / pale warms
+    PRIMROSE: "#edf2e6",
+    YELLOW: "#d99a3a",
+    APRICOT: "#e79545",
+    ORANGE: "#b9573f",
+
+    // ── Pinks / peaches
+    CORAL: "#f1ddd0",
+    PEACH: "#e39281",
+    PEONY: "#e8ddd6",
+    PINK: "#c87a96",
+    MAGENTA: "#6f1b54",
+
+    // ── Greens (dry → fresh)
+    KALE: "#303022",
+    GREEN: "#30402c",
+    LIME: "#8f9550",
+    CHIVE: "#849655",
+    SAGE: "#c4d2c4",
+
+    // ── Cool lights / florals
+    VIOLET: "#a3a8b8",
+    HYACINTH: "#aabbbf",
+    TURQUOISE: "#44b4be",
+  };
+  const TOFT_NAMES = Object.keys(TOFT_HEX);
+
+  const GUTSY_PACK = {
+    "schema": "granny-palette-pack/v1",
+    "meta": {
+      "title": "Gutsy Toft Palettes",
+      "notes": "Hex values intentionally omitted. Map Toft color names to hex in the main HTML."
+    },
+    "roles": ["Anchor", "AntagonistCold", "AntagonistHot", "MediatorOrInstigator"],
+    "palettes": [
+      {
+        "id": "maikels-scarf",
+        "name": "Maikel’s Scarf",
+        "why": "Observed, not designed: high-contrast warmth and coolness held together by soft neutrals, discovered through wear rather than theory.",
+        "colors": [
+          { "role": "Anchor", "toft": "Cream" },
+          { "role": "AntagonistCold", "toft": "Turquoise" },
+          { "role": "AntagonistHot", "toft": "Stone" },
+          { "role": "MediatorOrInstigator", "toft": "Shale" }
+        ]
+      },
+      {
+        "id": "emergency-broadcast",
+        "name": "Emergency Broadcast",
+        "why": "A calm system suddenly hijacked by a warning signal that cannot be ignored.",
+        "colors": [
+          { "role": "Anchor", "toft": "Charcoal" },
+          { "role": "AntagonistCold", "toft": "Sapphire" },
+          { "role": "AntagonistHot", "toft": "Orange" },
+          { "role": "MediatorOrInstigator", "toft": "Cream" }
+        ]
+      },
+      {
+        "id": "biohazard-garden",
+        "name": "Biohazard Garden",
+        "why": "Nature behaving badly under fluorescent lighting.",
+        "colors": [
+          { "role": "Anchor", "toft": "Oatmeal" },
+          { "role": "AntagonistCold", "toft": "Kale" },
+          { "role": "AntagonistHot", "toft": "Beetroot" },
+          { "role": "MediatorOrInstigator", "toft": "Lime" }
+        ]
+      },
+      {
+        "id": "radar-interference",
+        "name": "Radar Interference",
+        "why": "Clean signals distorted by warmth leaking into the system.",
+        "colors": [
+          { "role": "Anchor", "toft": "Charcoal" },
+          { "role": "AntagonistCold", "toft": "Teal" },
+          { "role": "AntagonistHot", "toft": "Coral" },
+          { "role": "MediatorOrInstigator", "toft": "Steel" }
+        ]
+      },
+      {
+        "id": "ultraviolet-workwear",
+        "name": "Ultraviolet Workwear",
+        "why": "High-visibility colour sneaking into something brutally practical.",
+        "colors": [
+          { "role": "Anchor", "toft": "Charcoal" },
+          { "role": "AntagonistCold", "toft": "Amethyst" },
+          { "role": "AntagonistHot", "toft": "Camel" },
+          { "role": "MediatorOrInstigator", "toft": "Cream" }
+        ]
+      },
+      {
+        "id": "cold-fire-protocol",
+        "name": "Cold Fire Protocol",
+        "why": "Opposites forced to coexist under strict operational rules.",
+        "colors": [
+          { "role": "Anchor", "toft": "Shale" },
+          { "role": "AntagonistCold", "toft": "Hyacinth" },
+          { "role": "AntagonistHot", "toft": "Orange" },
+          { "role": "MediatorOrInstigator", "toft": "Silver" }
+        ]
+      },
+      {
+        "id": "signal-lost-at-sea",
+        "name": "Signal Lost at Sea",
+        "why": "Primary colours drifting in fog, barely holding formation.",
+        "colors": [
+          { "role": "Anchor", "toft": "Mushroom" },
+          { "role": "AntagonistCold", "toft": "Blue" },
+          { "role": "AntagonistHot", "toft": "Yellow" },
+          { "role": "MediatorOrInstigator", "toft": "Steel" }
+        ]
+      },
+      {
+        "id": "feral-neon",
+        "name": "Feral Neon",
+        "why": "Something wild escaped containment and learned good manners.",
+        "colors": [
+          { "role": "Anchor", "toft": "Charcoal" },
+          { "role": "AntagonistCold", "toft": "Magenta" },
+          { "role": "AntagonistHot", "toft": "Lime" },
+          { "role": "MediatorOrInstigator", "toft": "Cream" }
+        ]
+      },
+      {
+        "id": "oxide-and-ice",
+        "name": "Oxide & Ice",
+        "why": "Geology colliding with refrigeration.",
+        "colors": [
+          { "role": "Anchor", "toft": "Stone" },
+          { "role": "AntagonistCold", "toft": "Turquoise" },
+          { "role": "AntagonistHot", "toft": "Chestnut" },
+          { "role": "MediatorOrInstigator", "toft": "Silver" }
+        ]
+      },
+      {
+        "id": "after-the-siren",
+        "name": "After the Siren",
+        "why": "The danger has passed, but the tension hasn’t.",
+        "colors": [
+          { "role": "Anchor", "toft": "Shale" },
+          { "role": "AntagonistCold", "toft": "Ruby" },
+          { "role": "AntagonistHot", "toft": "Steel" },
+          { "role": "MediatorOrInstigator", "toft": "Silver" }
+        ]
+      },
+      {
+        "id": "experimental-aircraft",
+        "name": "Experimental Aircraft",
+        "why": "A prototype colour scheme that somehow made it off the runway.",
+        "colors": [
+          { "role": "Anchor", "toft": "Charcoal" },
+          { "role": "AntagonistCold", "toft": "Teal" },
+          { "role": "AntagonistHot", "toft": "Apricot" },
+          { "role": "MediatorOrInstigator", "toft": "Oatmeal" }
+        ]
+      }
+    ]
+  };
+
+  const INLINE_PACKS = {
+    "schema": "palette-pack-collection/v1",
+    "meta": {
+      "title": "Themed Palette Sets (10x each) — Toft names only",
+      "notes": "City/mood/company/cinema palettes are interpretive (inspired-by), not official specs. No hex values included; map Toft names to hex in the app."
+    },
+    "packs": [
+      {
+        "schema": "granny-palette-pack/v1",
+        "meta": { "title": "Cities — Main Character Energy" },
+        "roles": ["Anchor", "AntagonistCold", "AntagonistHot", "MediatorOrInstigator"],
+        "palettes": [
+          {
+            "id": "rome-travertine-heat",
+            "name": "Rome — Travertine Heat",
+            "why": "Sun-bleached stone, shadowed lanes, and terracotta life.",
+            "colors": [
+              { "role": "Anchor", "toft": "Stone" },
+              { "role": "AntagonistCold", "toft": "Shale" },
+              { "role": "AntagonistHot", "toft": "Orange" },
+              { "role": "MediatorOrInstigator", "toft": "Cream" }
+            ]
+          },
+          {
+            "id": "amsterdam-canal-glow",
+            "name": "Amsterdam — Canal Glow",
+            "why": "Water-grey skies, deep canal tones, warm window light.",
+            "colors": [
+              { "role": "Anchor", "toft": "Steel" },
+              { "role": "AntagonistCold", "toft": "Teal" },
+              { "role": "AntagonistHot", "toft": "Chestnut" },
+              { "role": "MediatorOrInstigator", "toft": "Cream" }
+            ]
+          },
+          {
+            "id": "istanbul-minaret-signal",
+            "name": "Istanbul — Minaret Signal",
+            "why": "Blue tiles, spice warmth, and night-market contrast.",
+            "colors": [
+              { "role": "Anchor", "toft": "Charcoal" },
+              { "role": "AntagonistCold", "toft": "Turquoise" },
+              { "role": "AntagonistHot", "toft": "Apricot" },
+              { "role": "MediatorOrInstigator", "toft": "Silver" }
+            ]
+          },
+          {
+            "id": "paris-stone-wine",
+            "name": "Paris — Stone & Wine",
+            "why": "Pale facades, graphite shadows, a red note of drama.",
+            "colors": [
+              { "role": "Anchor", "toft": "Shale" },
+              { "role": "AntagonistCold", "toft": "Silver" },
+              { "role": "AntagonistHot", "toft": "Ruby" },
+              { "role": "MediatorOrInstigator", "toft": "Cream" }
+            ]
+          },
+          {
+            "id": "london-rain-brass",
+            "name": "London — Rain & Brass",
+            "why": "Wet stone, dark wool, and a warm pub glow.",
+            "colors": [
+              { "role": "Anchor", "toft": "Charcoal" },
+              { "role": "AntagonistCold", "toft": "Steel" },
+              { "role": "AntagonistHot", "toft": "Camel" },
+              { "role": "MediatorOrInstigator", "toft": "Silver" }
+            ]
+          },
+          {
+            "id": "tokyo-neon-signal",
+            "name": "Tokyo — Neon Signal",
+            "why": "Midnight asphalt with electric signage and clean highlights.",
+            "colors": [
+              { "role": "Anchor", "toft": "Charcoal" },
+              { "role": "AntagonistCold", "toft": "Blue" },
+              { "role": "AntagonistHot", "toft": "Magenta" },
+              { "role": "MediatorOrInstigator", "toft": "Silver" }
+            ]
+          },
+          {
+            "id": "barcelona-sun-oxide",
+            "name": "Barcelona — Sun & Oxide",
+            "why": "Warm walls, sea breeze, and saturated life.",
+            "colors": [
+              { "role": "Anchor", "toft": "Camel" },
+              { "role": "AntagonistCold", "toft": "Turquoise" },
+              { "role": "AntagonistHot", "toft": "Coral" },
+              { "role": "MediatorOrInstigator", "toft": "Cream" }
+            ]
+          },
+          {
+            "id": "copenhagen-clean-calm",
+            "name": "Copenhagen — Clean Calm",
+            "why": "Design neutrals with a cold sea accent.",
+            "colors": [
+              { "role": "Anchor", "toft": "Stone" },
+              { "role": "AntagonistCold", "toft": "Hyacinth" },
+              { "role": "AntagonistHot", "toft": "Oatmeal" },
+              { "role": "MediatorOrInstigator", "toft": "Silver" }
+            ]
+          },
+          {
+            "id": "reykjavik-ice-lava",
+            "name": "Reykjavik — Ice & Lava",
+            "why": "Glacial light, volcanic dark, tiny warmth inside.",
+            "colors": [
+              { "role": "Anchor", "toft": "Charcoal" },
+              { "role": "AntagonistCold", "toft": "Silver" },
+              { "role": "AntagonistHot", "toft": "Raspberry" },
+              { "role": "MediatorOrInstigator", "toft": "Hyacinth" }
+            ]
+          },
+          {
+            "id": "new-york-taxi-steel",
+            "name": "New York — Taxi & Steel",
+            "why": "Hard edges, fast lights, yellow insistence.",
+            "colors": [
+              { "role": "Anchor", "toft": "Charcoal" },
+              { "role": "AntagonistCold", "toft": "Steel" },
+              { "role": "AntagonistHot", "toft": "Yellow" },
+              { "role": "MediatorOrInstigator", "toft": "Silver" }
+            ]
+          }
+        ]
+      },
+
+      {
+        "schema": "granny-palette-pack/v1",
+        "meta": { "title": "Moods — Emotional Weather" },
+        "roles": ["Anchor", "AntagonistCold", "AntagonistHot", "MediatorOrInstigator"],
+        "palettes": [
+          {
+            "id": "calm-focus",
+            "name": "Calm Focus",
+            "why": "Soft clarity with enough contrast to stay awake.",
+            "colors": [
+              { "role": "Anchor", "toft": "Stone" },
+              { "role": "AntagonistCold", "toft": "Sage" },
+              { "role": "AntagonistHot", "toft": "Coral" },
+              { "role": "MediatorOrInstigator", "toft": "Cream" }
+            ]
+          },
+          {
+            "id": "stormy-optimism",
+            "name": "Stormy Optimism",
+            "why": "Grey sky, bright heart.",
+            "colors": [
+              { "role": "Anchor", "toft": "Steel" },
+              { "role": "AntagonistCold", "toft": "Sapphire" },
+              { "role": "AntagonistHot", "toft": "Apricot" },
+              { "role": "MediatorOrInstigator", "toft": "Silver" }
+            ]
+          },
+          {
+            "id": "melancholy-rain",
+            "name": "Melancholy Rain",
+            "why": "Quiet sadness with a clean edge.",
+            "colors": [
+              { "role": "Anchor", "toft": "Charcoal" },
+              { "role": "AntagonistCold", "toft": "Shale" },
+              { "role": "AntagonistHot", "toft": "Violet" },
+              { "role": "MediatorOrInstigator", "toft": "Silver" }
+            ]
+          },
+          {
+            "id": "restless-spark",
+            "name": "Restless Spark",
+            "why": "Nervous system doing parkour, but stylish.",
+            "colors": [
+              { "role": "Anchor", "toft": "Charcoal" },
+              { "role": "AntagonistCold", "toft": "Teal" },
+              { "role": "AntagonistHot", "toft": "Raspberry" },
+              { "role": "MediatorOrInstigator", "toft": "Lime" }
+            ]
+          },
+          {
+            "id": "cosy-sunday",
+            "name": "Cosy Sunday",
+            "why": "Warm drink, soft light, zero obligations.",
+            "colors": [
+              { "role": "Anchor", "toft": "Oatmeal" },
+              { "role": "AntagonistCold", "toft": "Silver" },
+              { "role": "AntagonistHot", "toft": "Chestnut" },
+              { "role": "MediatorOrInstigator", "toft": "Cream" }
+            ]
+          },
+          {
+            "id": "midnight-confidence",
+            "name": "Midnight Confidence",
+            "why": "Dark base, crisp highlight, one dangerous accent.",
+            "colors": [
+              { "role": "Anchor", "toft": "Charcoal" },
+              { "role": "AntagonistCold", "toft": "Sapphire" },
+              { "role": "AntagonistHot", "toft": "Ruby" },
+              { "role": "MediatorOrInstigator", "toft": "Silver" }
+            ]
+          },
+          {
+            "id": "sunlit-kindness",
+            "name": "Sunlit Kindness",
+            "why": "Gentle warmth with a fresh lift.",
+            "colors": [
+              { "role": "Anchor", "toft": "Cream" },
+              { "role": "AntagonistCold", "toft": "Sage" },
+              { "role": "AntagonistHot", "toft": "Apricot" },
+              { "role": "MediatorOrInstigator", "toft": "Primrose" }
+            ]
+          },
+          {
+            "id": "focused-anger",
+            "name": "Focused Anger",
+            "why": "Contained heat under a controlled exterior.",
+            "colors": [
+              { "role": "Anchor", "toft": "Steel" },
+              { "role": "AntagonistCold", "toft": "Charcoal" },
+              { "role": "AntagonistHot", "toft": "Orange" },
+              { "role": "MediatorOrInstigator", "toft": "Silver" }
+            ]
+          },
+          {
+            "id": "creative-flow",
+            "name": "Creative Flow",
+            "why": "Colour ideas that don’t fight — they riff.",
+            "colors": [
+              { "role": "Anchor", "toft": "Stone" },
+              { "role": "AntagonistCold", "toft": "Turquoise" },
+              { "role": "AntagonistHot", "toft": "Peach" },
+              { "role": "MediatorOrInstigator", "toft": "Silver" }
+            ]
+          },
+          {
+            "id": "quiet-pride",
+            "name": "Quiet Pride",
+            "why": "Muted luxury with one velvet note.",
+            "colors": [
+              { "role": "Anchor", "toft": "Shale" },
+              { "role": "AntagonistCold", "toft": "Silver" },
+              { "role": "AntagonistHot", "toft": "Magenta" },
+              { "role": "MediatorOrInstigator", "toft": "Cream" }
+            ]
+          }
+        ]
+      },
+
+      {
+        "schema": "granny-palette-pack/v1",
+        "meta": { "title": "Pastels Only — Soft Power" },
+        "roles": ["Anchor", "AntagonistCold", "AntagonistHot", "MediatorOrInstigator"],
+        "palettes": [
+          {
+            "id": "powder-room",
+            "name": "Powder Room",
+            "why": "Blush + fog + clean linen.",
+            "colors": [
+              { "role": "Anchor", "toft": "Cream" },
+              { "role": "AntagonistCold", "toft": "Silver" },
+              { "role": "AntagonistHot", "toft": "Peony" },
+              { "role": "MediatorOrInstigator", "toft": "Oatmeal" }
+            ]
+          },
+          {
+            "id": "spring-haze",
+            "name": "Spring Haze",
+            "why": "New leaves under cloudy skies with a shy flower.",
+            "colors": [
+              { "role": "Anchor", "toft": "Primrose" },
+              { "role": "AntagonistCold", "toft": "Sage" },
+              { "role": "AntagonistHot", "toft": "Peach" },
+              { "role": "MediatorOrInstigator", "toft": "Cream" }
+            ]
+          },
+          {
+            "id": "lilac-glass",
+            "name": "Lilac Glass",
+            "why": "Soft violet and cool light.",
+            "colors": [
+              { "role": "Anchor", "toft": "Silver" },
+              { "role": "AntagonistCold", "toft": "Hyacinth" },
+              { "role": "AntagonistHot", "toft": "Coral" },
+              { "role": "MediatorOrInstigator", "toft": "Violet" }
+            ]
+          },
+          {
+            "id": "beach-milkshake",
+            "name": "Beach Milkshake",
+            "why": "Warm sand, soft fruit, gentle sea air.",
+            "colors": [
+              { "role": "Anchor", "toft": "Oatmeal" },
+              { "role": "AntagonistCold", "toft": "Sage" },
+              { "role": "AntagonistHot", "toft": "Peach" },
+              { "role": "MediatorOrInstigator", "toft": "Coral" }
+            ]
+          },
+          {
+            "id": "museum-soft-light",
+            "name": "Museum Soft Light",
+            "why": "Quiet neutrals with a controlled whisper.",
+            "colors": [
+              { "role": "Anchor", "toft": "Cream" },
+              { "role": "AntagonistCold", "toft": "Stone" },
+              { "role": "AntagonistHot", "toft": "Peony" },
+              { "role": "MediatorOrInstigator", "toft": "Silver" }
+            ]
+          },
+          {
+            "id": "mint-meringue",
+            "name": "Mint Meringue",
+            "why": "Sugar-soft with a green exhale.",
+            "colors": [
+              { "role": "Anchor", "toft": "Cream" },
+              { "role": "AntagonistCold", "toft": "Sage" },
+              { "role": "AntagonistHot", "toft": "Primrose" },
+              { "role": "MediatorOrInstigator", "toft": "Silver" }
+            ]
+          },
+          {
+            "id": "rose-fog",
+            "name": "Rose Fog",
+            "why": "Everything romantic, nothing loud.",
+            "colors": [
+              { "role": "Anchor", "toft": "Silver" },
+              { "role": "AntagonistCold", "toft": "Cream" },
+              { "role": "AntagonistHot", "toft": "Peony" },
+              { "role": "MediatorOrInstigator", "toft": "Coral" }
+            ]
+          },
+          {
+            "id": "gentle-citrus",
+            "name": "Gentle Citrus",
+            "why": "A pastel sunrise with a lemony wink.",
+            "colors": [
+              { "role": "Anchor", "toft": "Cream" },
+              { "role": "AntagonistCold", "toft": "Silver" },
+              { "role": "AntagonistHot", "toft": "Apricot" },
+              { "role": "MediatorOrInstigator", "toft": "Primrose" }
+            ]
+          },
+          {
+            "id": "soft-denim",
+            "name": "Soft Denim",
+            "why": "Cool, calm, and wearable forever.",
+            "colors": [
+              { "role": "Anchor", "toft": "Silver" },
+              { "role": "AntagonistCold", "toft": "Hyacinth" },
+              { "role": "AntagonistHot", "toft": "Oatmeal" },
+              { "role": "MediatorOrInstigator", "toft": "Cream" }
+            ]
+          },
+          {
+            "id": "peach-ice-cream",
+            "name": "Peach Ice Cream",
+            "why": "Pastel dessert tones without the sugar crash.",
+            "colors": [
+              { "role": "Anchor", "toft": "Cream" },
+              { "role": "AntagonistCold", "toft": "Silver" },
+              { "role": "AntagonistHot", "toft": "Peach" },
+              { "role": "MediatorOrInstigator", "toft": "Oatmeal" }
+            ]
+          }
+        ]
+      },
+
+      {
+        "schema": "granny-palette-pack/v1",
+        "meta": { "title": "Cinema-Inspired — Mood Grading (10 palettes)" },
+        "roles": ["Anchor", "AntagonistCold", "AntagonistHot", "MediatorOrInstigator"],
+        "palettes": [
+          {
+            "id": "dollhouse-symmetry",
+            "name": "Dollhouse Symmetry",
+            "why": "Curated pastels with precise weirdness.",
+            "inspiredBy": { "movies": ["The Grand Budapest Hotel"] },
+            "colors": [
+              { "role": "Anchor", "toft": "Cream" },
+              { "role": "AntagonistCold", "toft": "Hyacinth" },
+              { "role": "AntagonistHot", "toft": "Coral" },
+              { "role": "MediatorOrInstigator", "toft": "Primrose" }
+            ]
+          },
+          {
+            "id": "noir-neon",
+            "name": "Noir Neon",
+            "why": "Hot neon bleeding into cold night.",
+            "inspiredBy": { "movies": ["Blade Runner 2049", "Drive"] },
+            "colors": [
+              { "role": "Anchor", "toft": "Charcoal" },
+              { "role": "AntagonistCold", "toft": "Blue" },
+              { "role": "AntagonistHot", "toft": "Magenta" },
+              { "role": "MediatorOrInstigator", "toft": "Teal" }
+            ]
+          },
+          {
+            "id": "desert-epic",
+            "name": "Desert Epic",
+            "why": "Sun, sand, and a blue horizon of fate.",
+            "inspiredBy": { "movies": ["Dune (2021)", "Lawrence of Arabia"] },
+            "colors": [
+              { "role": "Anchor", "toft": "Camel" },
+              { "role": "AntagonistCold", "toft": "Sapphire" },
+              { "role": "AntagonistHot", "toft": "Apricot" },
+              { "role": "MediatorOrInstigator", "toft": "Oatmeal" }
+            ]
+          },
+          {
+            "id": "cold-war-thriller",
+            "name": "Cold-War Thriller",
+            "why": "Muted bureaucracy with one warm human pulse.",
+            "inspiredBy": { "movies": ["Tinker Tailor Soldier Spy"] },
+            "colors": [
+              { "role": "Anchor", "toft": "Steel" },
+              { "role": "AntagonistCold", "toft": "Shale" },
+              { "role": "AntagonistHot", "toft": "Ruby" },
+              { "role": "MediatorOrInstigator", "toft": "Silver" }
+            ]
+          },
+          {
+            "id": "cleanroom-future",
+            "name": "Cleanroom Future",
+            "why": "Clinical light with controlled alarm tones.",
+            "inspiredBy": { "movies": ["Ex Machina", "Gattaca"] },
+            "colors": [
+              { "role": "Anchor", "toft": "Silver" },
+              { "role": "AntagonistCold", "toft": "Turquoise" },
+              { "role": "AntagonistHot", "toft": "Orange" },
+              { "role": "MediatorOrInstigator", "toft": "Shale" }
+            ]
+          },
+          {
+            "id": "warm-nostalgia",
+            "name": "Warm Nostalgia",
+            "why": "Golden warmth with soft shadow edges.",
+            "inspiredBy": { "movies": ["Her", "Amélie"] },
+            "colors": [
+              { "role": "Anchor", "toft": "Oatmeal" },
+              { "role": "AntagonistCold", "toft": "Cream" },
+              { "role": "AntagonistHot", "toft": "Apricot" },
+              { "role": "MediatorOrInstigator", "toft": "Coral" }
+            ]
+          },
+          {
+            "id": "inky-horror",
+            "name": "Inky Horror",
+            "why": "Deep darkness with a single sickly accent.",
+            "inspiredBy": { "movies": ["The Lighthouse", "Se7en"] },
+            "colors": [
+              { "role": "Anchor", "toft": "Charcoal" },
+              { "role": "AntagonistCold", "toft": "Steel" },
+              { "role": "AntagonistHot", "toft": "Ruby" },
+              { "role": "MediatorOrInstigator", "toft": "Lime" }
+            ]
+          },
+          {
+            "id": "pastel-violence",
+            "name": "Pastel Violence",
+            "why": "Sweet colours doing morally questionable things.",
+            "inspiredBy": { "movies": ["Kill Bill: Vol. 1", "Marie Antoinette"] },
+            "colors": [
+              { "role": "Anchor", "toft": "Cream" },
+              { "role": "AntagonistCold", "toft": "Hyacinth" },
+              { "role": "AntagonistHot", "toft": "Raspberry" },
+              { "role": "MediatorOrInstigator", "toft": "Primrose" }
+            ]
+          },
+          {
+            "id": "monochrome-tension",
+            "name": "Monochrome Tension",
+            "why": "Grey structure with one saturated breach.",
+            "inspiredBy": { "movies": ["The Godfather", "Zodiac"] },
+            "colors": [
+              { "role": "Anchor", "toft": "Charcoal" },
+              { "role": "AntagonistCold", "toft": "Shale" },
+              { "role": "AntagonistHot", "toft": "Chestnut" },
+              { "role": "MediatorOrInstigator", "toft": "Silver" }
+            ]
+          },
+          {
+            "id": "ocean-fever",
+            "name": "Ocean Fever",
+            "why": "Cold water tones with a warm pulse underneath.",
+            "inspiredBy": { "movies": ["The Shape of Water", "Portrait of a Lady on Fire"] },
+            "colors": [
+              { "role": "Anchor", "toft": "Teal" },
+              { "role": "AntagonistCold", "toft": "Turquoise" },
+              { "role": "AntagonistHot", "toft": "Coral" },
+              { "role": "MediatorOrInstigator", "toft": "Charcoal" }
+            ]
+          }
+        ]
+      },
+
+      {
+        "schema": "granny-palette-pack/v1",
+        "meta": { "title": "Companies — Brand-ish Signals (10 palettes)" },
+        "roles": ["Anchor", "AntagonistCold", "AntagonistHot", "MediatorOrInstigator"],
+        "palettes": [
+          {
+            "id": "apple-minimal",
+            "name": "Apple — Minimal Hardware",
+            "why": "Quiet precision with clean highlights and zero clutter tolerance.",
+            "colors": [
+              { "role": "Anchor", "toft": "Charcoal" },
+              { "role": "AntagonistCold", "toft": "Steel" },
+              { "role": "AntagonistHot", "toft": "Silver" },
+              { "role": "MediatorOrInstigator", "toft": "Cream" }
+            ]
+          },
+          {
+            "id": "ikea-functional",
+            "name": "IKEA — Functional Pop",
+            "why": "Bright optimism anchored by practical reality.",
+            "colors": [
+              { "role": "Anchor", "toft": "Blue" },
+              { "role": "AntagonistCold", "toft": "Silver" },
+              { "role": "AntagonistHot", "toft": "Yellow" },
+              { "role": "MediatorOrInstigator", "toft": "Cream" }
+            ]
+          },
+          {
+            "id": "coca-cola-classic",
+            "name": "Coca-Cola — Classic Punch",
+            "why": "Bold red lead with crisp contrast.",
+            "colors": [
+              { "role": "Anchor", "toft": "Ruby" },
+              { "role": "AntagonistCold", "toft": "Charcoal" },
+              { "role": "AntagonistHot", "toft": "Raspberry" },
+              { "role": "MediatorOrInstigator", "toft": "Cream" }
+            ]
+          },
+          {
+            "id": "spotify-nightmode",
+            "name": "Spotify — Night Mode",
+            "why": "Dark UI with a green signal that means press play.",
+            "colors": [
+              { "role": "Anchor", "toft": "Charcoal" },
+              { "role": "AntagonistCold", "toft": "Green" },
+              { "role": "AntagonistHot", "toft": "Lime" },
+              { "role": "MediatorOrInstigator", "toft": "Steel" }
+            ]
+          },
+          {
+            "id": "ups-delivery-core",
+            "name": "UPS — Delivery Core",
+            "why": "Practical brown with high-visibility routing cues.",
+            "colors": [
+              { "role": "Anchor", "toft": "Chestnut" },
+              { "role": "AntagonistCold", "toft": "Charcoal" },
+              { "role": "AntagonistHot", "toft": "Yellow" },
+              { "role": "MediatorOrInstigator", "toft": "Oatmeal" }
+            ]
+          },
+          {
+            "id": "tiffany-box",
+            "name": "Tiffany — The Box",
+            "why": "That unmistakable blue-green against clean neutrals.",
+            "colors": [
+              { "role": "Anchor", "toft": "Turquoise" },
+              { "role": "AntagonistCold", "toft": "Silver" },
+              { "role": "AntagonistHot", "toft": "Cream" },
+              { "role": "MediatorOrInstigator", "toft": "Charcoal" }
+            ]
+          },
+          {
+            "id": "ferrari-urgent",
+            "name": "Ferrari — Urgent Motion",
+            "why": "High-speed red with dark engineering and a bright accent.",
+            "colors": [
+              { "role": "Anchor", "toft": "Ruby" },
+              { "role": "AntagonistCold", "toft": "Charcoal" },
+              { "role": "AntagonistHot", "toft": "Yellow" },
+              { "role": "MediatorOrInstigator", "toft": "Steel" }
+            ]
+          },
+          {
+            "id": "starbucks-morning",
+            "name": "Starbucks — Morning Habit",
+            "why": "Deep green comfort with a creamy pause.",
+            "colors": [
+              { "role": "Anchor", "toft": "Green" },
+              { "role": "AntagonistCold", "toft": "Sage" },
+              { "role": "AntagonistHot", "toft": "Oatmeal" },
+              { "role": "MediatorOrInstigator", "toft": "Cream" }
+            ]
+          },
+          {
+            "id": "netflix-glow",
+            "name": "Netflix — Living Room Glow",
+            "why": "Dark room, red logo, soft neutral light.",
+            "colors": [
+              { "role": "Anchor", "toft": "Charcoal" },
+              { "role": "AntagonistCold", "toft": "Steel" },
+              { "role": "AntagonistHot", "toft": "Raspberry" },
+              { "role": "MediatorOrInstigator", "toft": "Silver" }
+            ]
+          },
+          {
+            "id": "google-playful",
+            "name": "Google — Playful System",
+            "why": "Friendly colour blocks anchored by neutral logic.",
+            "colors": [
+              { "role": "Anchor", "toft": "Silver" },
+              { "role": "AntagonistCold", "toft": "Blue" },
+              { "role": "AntagonistHot", "toft": "Yellow" },
+              { "role": "MediatorOrInstigator", "toft": "Raspberry" }
+            ]
+          }
+        ]
+      }
+    ]
+  };
+
+  let paletteSets = [];
+  let activeSetId = null;
+  let lastPresetSelection = null;
+  const CUSTOM_DEFAULTS = ["CHARCOAL", "TEAL", "CORAL", "STEEL"];
+  const customPalette = {
+    id: "custom",
+    name: "Custom (your pick)",
+    why: "User-selected Toft colours.",
+    colors: [],
+  };
+
+  const grid = document.getElementById('grid');
+  const setSelect = document.getElementById('setSelect');
+  const paletteSelect = document.getElementById('paletteSelect');
+  const typesRow = document.getElementById('typesRow');
+  const patternGrid = document.getElementById('patternGrid');
+  const modeName = document.getElementById('modeName');
+  const patternRepeat = document.getElementById('patternRepeat');
+  const previewWhy = document.getElementById('previewWhy');
+  const repeatXInput = document.getElementById('repeatX');
+  const repeatYInput = document.getElementById('repeatY');
+  const downloadJpgButton = document.getElementById('downloadJpg');
+  const loadPackButton = document.getElementById('loadPackButton');
+  const exportPackButton = document.getElementById('exportPackButton');
+  const palettePackInput = document.getElementById('palettePackInput');
+  const packStatus = document.getElementById('packStatus');
+  const unknownColors = document.getElementById('unknownColors');
+  const customControls = document.getElementById('customControls');
+  const customCenterSelect = document.getElementById('customCenter');
+  const customRing1Select = document.getElementById('customRing1');
+  const customRing2Select = document.getElementById('customRing2');
+  const customRing3Select = document.getElementById('customRing3');
+  const prevPaletteButton = document.getElementById('prevPalette');
+  const nextPaletteButton = document.getElementById('nextPalette');
+  const customDropdowns = [];
+  const TYPES = [
+    { key: 'α', rot: [0,1,2,3] },
+    { key: 'β', rot: [1,2,3,0] },
+    { key: 'γ', rot: [2,3,0,1] },
+    { key: 'δ', rot: [3,0,1,2] },
+  ];
+
+  const TILING_4 = [
+    ['α','β','γ','δ'],
+    ['β','γ','δ','α'],
+    ['γ','δ','α','β'],
+    ['δ','α','β','γ'],
+  ];
+
+  function slugify(value){
+    return String(value || '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+  }
+
+  function formatToftName(key){
+    return String(key || '')
+      .toLowerCase()
+      .replace(/\b\w/g, letter => letter.toUpperCase());
+  }
+
+  function toftKeyFromName(name){
+    return String(name || '').trim().toUpperCase();
+  }
+
+  function toftToHex(toft){
+    const key = String(toft || '').trim().toUpperCase();
+    return TOFT_HEX[key] || "#ff00ff";
+  }
+
+  function normalizePalette(raw, index){
+    const name = String(raw?.name || `Palette ${index + 1}`);
+    const id = String(raw?.id || slugify(name) || `palette-${index + 1}`);
+    const why = String(raw?.why || '');
+    const movies = Array.isArray(raw?.inspiredBy?.movies)
+      ? raw.inspiredBy.movies.filter(Boolean)
+      : [];
+    const colors = Array.isArray(raw?.colors) ? raw.colors : [];
+    const normalizedColors = colors.slice(0, 4).map((c, colorIndex) => {
+      const role = String(c?.role || `Color ${colorIndex + 1}`);
+      const rawToft = String(c?.toft || c?.name || '').trim();
+      const display = rawToft || '(missing)';
+      return { role, name: display, hex: toftToHex(rawToft) };
+    });
+
+    while (normalizedColors.length < 4){
+      const idx = normalizedColors.length;
+      normalizedColors.push({
+        role: `Color ${idx + 1}`,
+        name: '(missing)',
+        hex: "#ff00ff",
+      });
+    }
+
+    const palette = { id, name, why, colors: normalizedColors };
+    if (movies.length){
+      palette.inspiredBy = { movies };
+    }
+    return palette;
+  }
+
+  function normalizePackPalettes(pack){
+    if (!pack || typeof pack !== 'object'){
+      throw new Error('Invalid palette pack format.');
+    }
+    if (pack.schema !== PACK_SCHEMA){
+      throw new Error(`Unsupported schema: ${pack.schema || 'missing'}.`);
+    }
+    if (!Array.isArray(pack.palettes)){
+      throw new Error('Palette pack is missing a palettes array.');
+    }
+    return pack.palettes.map((palette, idx) => normalizePalette(palette, idx));
+  }
+
+  function ensureUniqueSetId(base, usedIds){
+    let id = base || 'palette-set';
+    let counter = 2;
+    while (usedIds.has(id)){
+      id = `${base}-${counter}`;
+      counter += 1;
+    }
+    usedIds.add(id);
+    return id;
+  }
+
+  function buildSetFromPack(pack, source, usedIds){
+    const meta = pack.meta || {};
+    const title = String(meta.title || 'Palette set').trim();
+    const baseId = slugify(title) || 'palette-set';
+    const id = ensureUniqueSetId(baseId, usedIds);
+    const roles = Array.isArray(pack.roles) ? pack.roles.slice() : [];
+    return {
+      id,
+      name: title || 'Palette set',
+      source,
+      loadedAt: Date.now(),
+      palettes: normalizePackPalettes(pack),
+      roles,
+    };
+  }
+
+  function buildSetsFromInput(input, source, existingIds){
+    if (!input || typeof input !== 'object'){
+      throw new Error('Invalid palette JSON format.');
+    }
+    const usedIds = existingIds || new Set();
+    let packs = [];
+    if (input.schema === COLLECTION_SCHEMA){
+      if (!Array.isArray(input.packs)){
+        throw new Error('Palette collection is missing a packs array.');
+      }
+      packs = input.packs;
+    } else if (input.schema === PACK_SCHEMA){
+      packs = [input];
+    } else {
+      throw new Error(`Unsupported schema: ${input.schema || 'missing'}.`);
+    }
+
+    return packs.map(pack => buildSetFromPack(pack, source, usedIds));
+  }
+
+  const BUILTIN_SETS = (() => {
+    const usedIds = new Set();
+    const gutsy = buildSetsFromInput(GUTSY_PACK, 'builtin', usedIds);
+    const themed = buildSetsFromInput(INLINE_PACKS, 'builtin', usedIds);
+    return [...gutsy, ...themed];
+  })();
+
+  function setPackStatus(message, kind){
+    if (!message){
+      packStatus.textContent = '';
+      packStatus.classList.remove('show', 'warn', 'error');
+      return;
+    }
+    packStatus.textContent = message;
+    packStatus.classList.remove('warn', 'error');
+    packStatus.classList.add('show', kind || 'warn');
+  }
+
+  function setActiveSetId(id){
+    activeSetId = id;
+  }
+
+  function getActiveSet(){
+    if (!paletteSets.length){
+      return null;
+    }
+    const match = paletteSets.find(set => set.id === activeSetId);
+    return match || paletteSets[0] || null;
+  }
+
+  function updateUnknownWarning(){
+    const unknown = new Set();
+    const activeSet = getActiveSet();
+    const palettes = activeSet ? activeSet.palettes : [];
+    palettes.forEach(palette => {
+      palette.colors.forEach(color => {
+        const name = String(color?.name || '').trim();
+        if (!name){
+          unknown.add('(missing)');
+          return;
+        }
+        const key = name.toUpperCase();
+        if (!TOFT_HEX[key]){
+          unknown.add(name);
+        }
+      });
+    });
+    if (!unknown.size){
+      unknownColors.textContent = '';
+      unknownColors.classList.remove('show');
+      return;
+    }
+    const list = Array.from(unknown).sort((a, b) => a.localeCompare(b));
+    unknownColors.textContent = `Unknown Toft colours: ${list.join(', ')}`;
+    unknownColors.classList.add('show');
+  }
+
+  function getSelectedPaletteId(){
+    if (paletteSelect.value === 'custom'){
+      return 'custom';
+    }
+    const idx = Number(paletteSelect.value);
+    const activeSet = getActiveSet();
+    return activeSet?.palettes[idx]?.id || '';
+  }
+
+  function refreshUI(preferredId){
+    initSetSelect();
+    initPaletteSelect(preferredId);
+    renderCards();
+    renderPreview();
+    updateUnknownWarning();
+    updateNavButtons();
+  }
+
+  function buildToftOptions(select){
+    select.innerHTML = '';
+    Object.entries(TOFT_HEX).forEach(([name]) => {
+      const opt = document.createElement('option');
+      opt.value = name;
+      opt.textContent = formatToftName(name);
+      select.appendChild(opt);
+    });
+  }
+
+  function readStoredCustomValue(key, fallback){
+    try {
+      const raw = localStorage.getItem(key);
+      const value = String(raw || '').trim().toUpperCase();
+      if (value && TOFT_HEX[value]) return value;
+    } catch (error){
+      return fallback;
+    }
+    return fallback;
+  }
+
+  function saveCustomValue(key, value){
+    try {
+      localStorage.setItem(key, value);
+    } catch (error){
+      return;
+    }
+  }
+
+  function getDropdownParts(select){
+    const wrap = select.parentElement;
+    return {
+      wrap,
+      button: wrap.querySelector('.customSelectBtn'),
+      menu: wrap.querySelector('.customSelectMenu'),
+    };
+  }
+
+  function closeAllCustomMenus(exceptMenu = null){
+    customDropdowns.forEach(drop => {
+      if (drop.menu !== exceptMenu){
+        drop.menu.hidden = true;
+        drop.button.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
+
+  function updateCustomDropdownDisplay(select){
+    const { button, menu } = getDropdownParts(select);
+    const key = select.value;
+    const label = select.options[select.selectedIndex]?.textContent || formatToftName(key);
+    const swatch = button.querySelector('.swatchDot');
+    if (swatch){
+      swatch.style.setProperty('--hex', TOFT_HEX[key] || "#ff00ff");
+    }
+    const text = button.querySelector('.customSelectLabel');
+    if (text){
+      text.textContent = label;
+    }
+    if (!menu){
+      return;
+    }
+    menu.querySelectorAll('.customOption').forEach(option => {
+      const isSelected = option.dataset.value === key;
+      option.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+      const check = option.querySelector('.optionCheck');
+      if (check){
+        check.textContent = isSelected ? '✓' : '';
+      }
+    });
+  }
+
+  function buildCustomMenu(select, storageKey){
+    const { menu } = getDropdownParts(select);
+    if (!menu){
+      return;
+    }
+    menu.innerHTML = '';
+    Array.from(select.options).forEach(option => {
+      const key = option.value;
+      const label = option.textContent || formatToftName(key);
+      const item = document.createElement('button');
+      item.type = 'button';
+      item.className = 'customOption';
+      item.dataset.value = key;
+      item.setAttribute('role', 'option');
+
+      const swatch = document.createElement('span');
+      swatch.className = 'swatchDot';
+      swatch.style.setProperty('--hex', TOFT_HEX[key] || "#ff00ff");
+
+      const name = document.createElement('span');
+      name.className = 'optionLabel';
+      name.textContent = label;
+
+      const check = document.createElement('span');
+      check.className = 'optionCheck';
+      check.setAttribute('aria-hidden', 'true');
+
+      item.appendChild(swatch);
+      item.appendChild(name);
+      item.appendChild(check);
+      item.addEventListener('click', () => {
+        select.value = key;
+        closeAllCustomMenus();
+        handleCustomChange(select, storageKey);
+      });
+      menu.appendChild(item);
+    });
+    updateCustomDropdownDisplay(select);
+  }
+
+  function registerCustomDropdown(select, storageKey){
+    const { button, menu } = getDropdownParts(select);
+    if (!button || !menu){
+      return;
+    }
+    customDropdowns.push({ select, button, menu, storageKey });
+    button.addEventListener('click', () => {
+      const willOpen = menu.hidden;
+      closeAllCustomMenus(willOpen ? menu : null);
+      menu.hidden = !willOpen;
+      button.setAttribute('aria-expanded', String(willOpen));
+    });
+    buildCustomMenu(select, storageKey);
+  }
+
+  function syncCustomPaletteFromControls(){
+    const selections = [
+      { role: "Anchor", key: customCenterSelect.value },
+      { role: "Antagonist (cold)", key: customRing1Select.value },
+      { role: "Antagonist (hot)", key: customRing2Select.value },
+      { role: "Mediator", key: customRing3Select.value },
+    ];
+    customPalette.colors = selections.map(item => ({
+      role: item.role,
+      name: formatToftName(item.key),
+      hex: TOFT_HEX[item.key] || "#ff00ff",
+    }));
+  }
+
+  function ensureSelectOption(select, key, label){
+    if (!key){
+      return;
+    }
+    const exists = Array.from(select.options).some(opt => opt.value === key);
+    if (exists){
+      return;
+    }
+    const opt = document.createElement('option');
+    opt.value = key;
+    opt.textContent = label || formatToftName(key);
+    select.appendChild(opt);
+    const dropdown = customDropdowns.find(item => item.select === select);
+    if (dropdown){
+      buildCustomMenu(select, dropdown.storageKey);
+    }
+  }
+
+  function applyPaletteToRoleControls(palette){
+    const colors = Array.isArray(palette?.colors) ? palette.colors : [];
+    const selects = [customCenterSelect, customRing1Select, customRing2Select, customRing3Select];
+    selects.forEach((select, idx) => {
+      const color = colors[idx];
+      if (!select){
+        return;
+      }
+      const name = String(color?.name || '').trim();
+      const fallbackName = name || '(missing)';
+      const key = toftKeyFromName(fallbackName);
+      ensureSelectOption(select, key, name || fallbackName);
+      select.value = key;
+      updateCustomDropdownDisplay(select);
+    });
+  }
+
+  function syncRoleControlsFromActivePalette(palette = null){
+    const activePalette = palette || getActivePalette();
+    if (!activePalette){
+      return;
+    }
+    applyPaletteToRoleControls(activePalette);
+  }
+
+  function updateCustomVisibility(){
+    customControls.hidden = false;
+  }
+
+  function initCustomControls(){
+    buildToftOptions(customCenterSelect);
+    buildToftOptions(customRing1Select);
+    buildToftOptions(customRing2Select);
+    buildToftOptions(customRing3Select);
+
+    customCenterSelect.value = readStoredCustomValue('gs_custom_0', CUSTOM_DEFAULTS[0]);
+    customRing1Select.value = readStoredCustomValue('gs_custom_1', CUSTOM_DEFAULTS[1]);
+    customRing2Select.value = readStoredCustomValue('gs_custom_2', CUSTOM_DEFAULTS[2]);
+    customRing3Select.value = readStoredCustomValue('gs_custom_3', CUSTOM_DEFAULTS[3]);
+
+    registerCustomDropdown(customCenterSelect, 'gs_custom_0');
+    registerCustomDropdown(customRing1Select, 'gs_custom_1');
+    registerCustomDropdown(customRing2Select, 'gs_custom_2');
+    registerCustomDropdown(customRing3Select, 'gs_custom_3');
+    updateCustomDropdownDisplay(customCenterSelect);
+    updateCustomDropdownDisplay(customRing1Select);
+    updateCustomDropdownDisplay(customRing2Select);
+    updateCustomDropdownDisplay(customRing3Select);
+    syncCustomPaletteFromControls();
+  }
+
+  function markCustomEdited(){
+    if (customPalette.name !== 'Custom (edited)'){
+      customPalette.name = 'Custom (edited)';
+      const opt = paletteSelect.querySelector('option[value="custom"]');
+      if (opt){
+        opt.textContent = customPalette.name;
+      }
+    }
+  }
+
+  function persistCustomSelections(){
+    saveCustomValue('gs_custom_0', customCenterSelect.value);
+    saveCustomValue('gs_custom_1', customRing1Select.value);
+    saveCustomValue('gs_custom_2', customRing2Select.value);
+    saveCustomValue('gs_custom_3', customRing3Select.value);
+  }
+
+  function handleCustomChange(select, storageKey){
+    updateCustomDropdownDisplay(select);
+    saveCustomValue(storageKey, select.value);
+    if (paletteSelect.value !== 'custom'){
+      paletteSelect.value = 'custom';
+    }
+    markCustomEdited();
+    persistCustomSelections();
+    syncCustomPaletteFromControls();
+    renderPreview();
+  }
+
+  function getActivePalette(){
+    if (paletteSelect.value === 'custom'){
+      return customPalette;
+    }
+    const activeSet = getActiveSet();
+    if (!activeSet){
+      return null;
+    }
+    const idx = Number(paletteSelect.value);
+    return activeSet.palettes[idx];
+  }
+
+  function grannySvgHex(hexes, opts = {}){
+    const joined = Boolean(opts.joined);
+    const outerRx = joined ? 0 : 14;
+    const shadowDef = joined ? '' : `
+        <defs>
+          <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="1" stdDeviation="1" flood-color="rgba(0,0,0,.35)"/>
+          </filter>
+        </defs>
+    `;
+    const shadowAttr = joined ? '' : ' filter="url(#soft)"';
+    const [c1,c2,c3,c4] = hexes;
+    return `
+      <svg viewBox="0 0 100 100" preserveAspectRatio="none" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Granny preview">
+        ${shadowDef}
+        <rect x="0" y="0" width="100" height="100" rx="${outerRx}" fill="${c4}"${shadowAttr}/>
+        <rect x="10" y="10" width="80" height="80" rx="12" fill="${c3}"/>
+        <rect x="22" y="22" width="56" height="56" rx="10" fill="${c2}"/>
+        <rect x="36" y="36" width="28" height="28" rx="9" fill="${c1}"/>
+      </svg>
+    `;
+  }
+
+  function paletteToHexes(palette, rot){
+    return rot.map(i => palette.colors[i].hex);
+  }
+
+  function readRepeatValue(input){
+    const raw = Math.floor(Number(input.value));
+    const value = Number.isFinite(raw) && raw > 0 ? raw : 1;
+    input.value = String(value);
+    return value;
+  }
+
+  function buildTiling(repeatX, repeatY){
+    const rows = [];
+    for (let y = 0; y < repeatY; y += 1){
+      TILING_4.forEach(row => {
+        const expanded = [];
+        for (let x = 0; x < repeatX; x += 1){
+          expanded.push(...row);
+        }
+        rows.push(expanded);
+      });
+    }
+    return rows;
+  }
+
+  function updatePatternSizing(cols, rows){
+    const container = patternGrid.parentElement;
+    const style = getComputedStyle(container);
+    const paddingX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
+    const paddingY = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
+    const availableWidth = Math.max(0, container.clientWidth - paddingX);
+    const maxHeight = Math.min(window.innerHeight * 0.55, 520);
+    const availableHeight = Math.max(0, maxHeight - paddingY);
+    let tileSize = Math.floor(Math.min(availableWidth / cols, availableHeight / rows));
+    tileSize = Math.max(12, Math.min(tileSize, 110));
+    patternGrid.style.setProperty('--tile-size', `${tileSize}px`);
+    patternGrid.style.gridTemplateColumns = `repeat(${cols}, var(--tile-size))`;
+    patternGrid.style.gridAutoRows = `var(--tile-size)`;
+  }
+
+  function updatePatternMeta(repeatX, repeatY, cols, rows){
+    patternRepeat.textContent = `Repeat ${repeatX}×${repeatY} · Total ${cols}×${rows}`;
+  }
+
+  function drawGranny(ctx, x, y, size, hexes){
+    const [c1,c2,c3,c4] = hexes;
+    ctx.fillStyle = c4;
+    ctx.fillRect(x, y, size, size);
+    ctx.fillStyle = c3;
+    ctx.fillRect(x + size * 0.10, y + size * 0.10, size * 0.80, size * 0.80);
+    ctx.fillStyle = c2;
+    ctx.fillRect(x + size * 0.22, y + size * 0.22, size * 0.56, size * 0.56);
+    ctx.fillStyle = c1;
+    ctx.fillRect(x + size * 0.36, y + size * 0.36, size * 0.28, size * 0.28);
+  }
+
+  function downloadPatternJpg(){
+    const pal = getActivePalette();
+    if (!pal){
+      return;
+    }
+    const repeatX = readRepeatValue(repeatXInput);
+    const repeatY = readRepeatValue(repeatYInput);
+    const tiling = buildTiling(repeatX, repeatY);
+    const rows = tiling.length;
+    const cols = tiling[0].length;
+    const keyToRot = Object.fromEntries(TYPES.map(t => [t.key, t.rot]));
+    const tileSize = parseFloat(getComputedStyle(patternGrid).getPropertyValue('--tile-size')) || 72;
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.floor(cols * tileSize);
+    canvas.height = Math.floor(rows * tileSize);
+    const ctx = canvas.getContext('2d');
+    tiling.forEach((row, rIdx) => {
+      row.forEach((key, cIdx) => {
+        const hexes = paletteToHexes(pal, keyToRot[key]);
+        drawGranny(ctx, cIdx * tileSize, rIdx * tileSize, tileSize, hexes);
+      });
+    });
+
+    const safeName = pal.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const filename = `granny-${safeName || 'pattern'}-${cols}x${rows}.jpg`;
+    if (canvas.toBlob){
+      canvas.toBlob(blob => {
+        if (!blob) return;
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }, 'image/jpeg', 0.92);
+    } else {
+      const link = document.createElement('a');
+      link.href = canvas.toDataURL('image/jpeg', 0.92);
+      link.download = filename;
+      link.click();
+    }
+  }
+
+  function renderCards(){
+    grid.innerHTML = '';
+    const activeSet = getActiveSet();
+    const palettes = activeSet ? activeSet.palettes : [];
+    if (!palettes.length){
+      const empty = document.createElement('div');
+      empty.className = 'emptyState';
+      empty.textContent = 'No palettes loaded yet. Use “Import JSON…” to add a set.';
+      grid.appendChild(empty);
+      return;
+    }
+
+    palettes.forEach((p, idx) => {
+      const card = document.createElement('article');
+      card.className = 'card';
+
+      const top = document.createElement('div');
+      top.className = 'cardTop';
+
+      const left = document.createElement('div');
+      left.style.flex = '1';
+
+      const h = document.createElement('h3');
+      h.className = 'title';
+      h.textContent = `${idx+1}. ${p.name}`;
+
+      const meta = document.createElement('div');
+      meta.className = 'meta';
+      meta.textContent = p.why;
+
+      const inspired = Array.isArray(p.inspiredBy?.movies) ? p.inspiredBy.movies : [];
+      const inspiredLine = inspired.length ? `Inspired by: ${inspired.join(', ')}` : '';
+
+      const chips = document.createElement('div');
+      chips.className = 'chips';
+      p.colors.forEach(c => {
+        const chip = document.createElement('div');
+        chip.className = 'chip';
+        chip.textContent = `${c.role}: ${c.name}`;
+        chips.appendChild(chip);
+      });
+
+      left.appendChild(h);
+      left.appendChild(meta);
+      if (inspiredLine){
+        const inspiredText = document.createElement('div');
+        inspiredText.className = 'meta inspired';
+        inspiredText.textContent = inspiredLine;
+        left.appendChild(inspiredText);
+      }
+      left.appendChild(chips);
+      top.appendChild(left);
+      card.appendChild(top);
+
+      const sw = document.createElement('div');
+      sw.className = 'swatches';
+      p.colors.forEach(c => {
+        const box = document.createElement('div');
+        box.className = 'sw';
+        const bar = document.createElement('div');
+        bar.className = 'bar';
+        bar.style.background = c.hex;
+        const lbl = document.createElement('div');
+        lbl.className = 'lbl';
+        lbl.innerHTML = `<span>${c.name}</span><span class="role">${c.role}</span>`;
+        box.appendChild(bar);
+        box.appendChild(lbl);
+        sw.appendChild(box);
+      });
+      card.appendChild(sw);
+
+      grid.appendChild(card);
+    });
+  }
+
+  function renderPreview(){
+    updateCustomVisibility();
+    const pal = getActivePalette();
+    if (!pal){
+      typesRow.innerHTML = '';
+      patternGrid.innerHTML = '';
+      modeName.textContent = '';
+      patternRepeat.textContent = '';
+      return;
+    }
+    syncRoleControlsFromActivePalette(pal);
+
+    modeName.textContent = pal.name;
+    const whyText = paletteSelect.value === 'custom' ? 'Build your own!:' : String(pal.why || '').trim();
+    previewWhy.textContent = whyText ? `(${whyText})` : '';
+
+    typesRow.innerHTML = '';
+    TYPES.forEach(t => {
+      const type = document.createElement('div');
+      type.className = 'typeCard';
+      const h = document.createElement('h3');
+      h.textContent = `Type ${t.key} (centre→ring1→ring2→ring3)`;
+      const svg = document.createElement('div');
+      svg.className = 'typeSvg';
+      svg.innerHTML = grannySvgHex(paletteToHexes(pal, t.rot));
+      type.appendChild(h);
+      type.appendChild(svg);
+      typesRow.appendChild(type);
+    });
+
+    const repeatX = readRepeatValue(repeatXInput);
+    const repeatY = readRepeatValue(repeatYInput);
+    const tiling = buildTiling(repeatX, repeatY);
+    const rows = tiling.length;
+    const cols = tiling[0].length;
+    updatePatternSizing(cols, rows);
+    updatePatternMeta(repeatX, repeatY, cols, rows);
+
+    patternGrid.innerHTML = '';
+    const keyToRot = Object.fromEntries(TYPES.map(t => [t.key, t.rot]));
+    tiling.flat().forEach(key => {
+      const tile = document.createElement('div');
+      tile.className = 'tile';
+      tile.innerHTML = grannySvgHex(paletteToHexes(pal, keyToRot[key]), { joined: true });
+      patternGrid.appendChild(tile);
+    });
+  }
+
+  function updateLastPresetSelection(){
+    if (paletteSelect.value === 'custom'){
+      return;
+    }
+    const activeSet = getActiveSet();
+    if (!activeSet){
+      return;
+    }
+    const idx = Number(paletteSelect.value);
+    const palette = activeSet.palettes[idx];
+    if (!palette){
+      return;
+    }
+    lastPresetSelection = {
+      setId: activeSet.id,
+      paletteIndex: idx,
+      paletteId: palette.id,
+    };
+  }
+
+  function flattenAllPalettes(sets){
+    const flat = [];
+    (sets || []).forEach((set, setIndex) => {
+      const palettes = Array.isArray(set?.palettes) ? set.palettes : [];
+      palettes.forEach((palette, paletteIndex) => {
+        flat.push({
+          setIndex,
+          setId: set.id,
+          paletteIndex,
+          paletteId: palette.id,
+        });
+      });
+    });
+    return flat;
+  }
+
+  function getCurrentPaletteRef(flat){
+    if (!flat.length){
+      return null;
+    }
+    const activeSet = getActiveSet();
+    if (paletteSelect.value !== 'custom' && activeSet){
+      const idx = Number(paletteSelect.value);
+      const palette = activeSet.palettes[idx];
+      if (palette){
+        return { setId: activeSet.id, paletteIndex: idx, paletteId: palette.id };
+      }
+    }
+    if (lastPresetSelection){
+      return lastPresetSelection;
+    }
+    const fallback = flat[0];
+    return fallback || null;
+  }
+
+  function updateNavButtons(){
+    const flat = flattenAllPalettes(paletteSets);
+    const disabled = flat.length === 0;
+    prevPaletteButton.disabled = disabled;
+    nextPaletteButton.disabled = disabled;
+  }
+
+  function navigatePalette(direction){
+    const flat = flattenAllPalettes(paletteSets);
+    if (!flat.length){
+      updateNavButtons();
+      return;
+    }
+    const current = getCurrentPaletteRef(flat);
+    let index = current
+      ? flat.findIndex(item => item.setId === current.setId && item.paletteId === current.paletteId)
+      : -1;
+    if (index < 0){
+      index = 0;
+    }
+    const nextIndex = (index + direction + flat.length) % flat.length;
+    const target = flat[nextIndex];
+    setActiveSetId(target.setId);
+    refreshUI(target.paletteId);
+    updateLastPresetSelection();
+    updateNavButtons();
+  }
+
+  function initSetSelect(){
+    setSelect.innerHTML = '';
+    if (!paletteSets.length){
+      setSelect.disabled = true;
+      return;
+    }
+    setSelect.disabled = false;
+    const activeSet = getActiveSet();
+    const activeId = activeSet ? activeSet.id : paletteSets[0].id;
+    paletteSets.forEach(set => {
+      const opt = document.createElement('option');
+      opt.value = set.id;
+      opt.textContent = set.name;
+      setSelect.appendChild(opt);
+    });
+    setActiveSetId(activeId);
+    setSelect.value = activeId;
+  }
+
+  function initPaletteSelect(preferredId = ''){
+    paletteSelect.innerHTML = '';
+    const activeSet = getActiveSet();
+    const palettes = activeSet ? activeSet.palettes : [];
+    let selectedValue = palettes.length ? '0' : 'custom';
+    if (preferredId === 'custom'){
+      selectedValue = 'custom';
+    }
+
+    palettes.forEach((p, idx) => {
+      const opt = document.createElement('option');
+      opt.value = String(idx);
+      opt.textContent = `${idx + 1}. ${p.name}`;
+      paletteSelect.appendChild(opt);
+      if (preferredId && p.id === preferredId){
+        selectedValue = String(idx);
+      }
+    });
+
+    const customOpt = document.createElement('option');
+    customOpt.value = 'custom';
+    customOpt.textContent = customPalette.name;
+    paletteSelect.appendChild(customOpt);
+
+    paletteSelect.disabled = false;
+    paletteSelect.value = selectedValue;
+    updateLastPresetSelection();
+  }
+
+  function buildPackExport(set){
+    const pack = {
+      schema: PACK_SCHEMA,
+      meta: { title: set.name },
+      palettes: set.palettes.map(palette => {
+        const payload = {
+          id: palette.id,
+          name: palette.name,
+          why: palette.why,
+          colors: palette.colors.map(color => ({
+            role: color.role,
+            toft: color.name,
+          })),
+        };
+        if (Array.isArray(palette.inspiredBy?.movies) && palette.inspiredBy.movies.length){
+          payload.inspiredBy = { movies: palette.inspiredBy.movies };
+        }
+        return payload;
+      }),
+    };
+    if (set.id){
+      pack.meta.id = set.id;
+    }
+    if (Array.isArray(set.roles) && set.roles.length){
+      pack.roles = set.roles.slice();
+    }
+    return pack;
+  }
+
+  function buildExportCollection(){
+    return {
+      schema: COLLECTION_SCHEMA,
+      meta: { title: "Granny Square Palette Sets" },
+      packs: paletteSets.map(set => buildPackExport(set)),
+    };
+  }
+
+  function insertImportedSets(sets){
+    const newIds = new Set(sets.map(set => set.id));
+    paletteSets = [...sets, ...paletteSets.filter(set => !newIds.has(set.id))];
+    setActiveSetId(sets[0].id);
+  }
+
+  function handleImportData(data){
+    const usedIds = new Set(paletteSets.map(set => set.id));
+    const sets = buildSetsFromInput(data, 'file', usedIds);
+    if (!sets.length){
+      throw new Error('No palette sets found in import.');
+    }
+    insertImportedSets(sets);
+    refreshUI();
+    setPackStatus('', '');
+  }
+
+  function handlePackFile(file){
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const payload = JSON.parse(reader.result);
+        handleImportData(payload);
+      } catch (error){
+        setPackStatus(`Could not import JSON: ${error.message}`, 'error');
+      }
+    };
+    reader.onerror = () => {
+      setPackStatus('Could not read JSON file.', 'error');
+    };
+    reader.readAsText(file);
+  }
+
+  function exportCurrentPack(){
+    if (!paletteSets.length){
+      setPackStatus('No palettes available to export.', 'warn');
+      return;
+    }
+    const collection = buildExportCollection();
+    const blob = new Blob([JSON.stringify(collection, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'granny-palette-sets.json';
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    setPackStatus('', '');
+  }
+
+  function initPaletteSets(){
+    paletteSets = BUILTIN_SETS.map(set => ({ ...set }));
+    setActiveSetId(paletteSets[0]?.id || '');
+  }
+
+  setSelect.addEventListener('change', () => {
+    setActiveSetId(setSelect.value);
+    initPaletteSelect();
+    renderCards();
+    renderPreview();
+    updateUnknownWarning();
+    updateNavButtons();
+  });
+  paletteSelect.addEventListener('change', () => {
+    updateLastPresetSelection();
+    renderPreview();
+  });
+  repeatXInput.addEventListener('input', renderPreview);
+  repeatYInput.addEventListener('input', renderPreview);
+  downloadJpgButton.addEventListener('click', downloadPatternJpg);
+  customCenterSelect.addEventListener('change', () => handleCustomChange(customCenterSelect, 'gs_custom_0'));
+  customRing1Select.addEventListener('change', () => handleCustomChange(customRing1Select, 'gs_custom_1'));
+  customRing2Select.addEventListener('change', () => handleCustomChange(customRing2Select, 'gs_custom_2'));
+  customRing3Select.addEventListener('change', () => handleCustomChange(customRing3Select, 'gs_custom_3'));
+  prevPaletteButton.addEventListener('click', () => navigatePalette(-1));
+  nextPaletteButton.addEventListener('click', () => navigatePalette(1));
+  loadPackButton.addEventListener('click', () => {
+    palettePackInput.click();
+  });
+  palettePackInput.addEventListener('change', event => {
+    const file = event.target.files && event.target.files[0];
+    if (file){
+      handlePackFile(file);
+    }
+    event.target.value = '';
+  });
+  exportPackButton.addEventListener('click', exportCurrentPack);
+  window.addEventListener('resize', renderPreview);
+  window.addEventListener('keydown', event => {
+    const target = event.target;
+    if (target && (target.tagName === 'INPUT' || target.tagName === 'SELECT' || target.tagName === 'TEXTAREA' || target.isContentEditable)){
+      return;
+    }
+    if (event.key === 'ArrowLeft'){
+      event.preventDefault();
+      navigatePalette(-1);
+    }
+    if (event.key === 'ArrowRight'){
+      event.preventDefault();
+      navigatePalette(1);
+    }
+  });
+  window.addEventListener('click', event => {
+    const target = event.target;
+    if (target && target.closest && target.closest('.customPick')){
+      return;
+    }
+    closeAllCustomMenus();
+  });
+
+  initCustomControls();
+  initPaletteSets();
+  refreshUI();
+</script>
+
+</body>
+</html>
